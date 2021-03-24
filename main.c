@@ -12,6 +12,7 @@ void main()
 {
     Init_OSC(2); //将系统时钟初始化为32M、使用外部晶振，
     Init_GPIO();
+    PUPH=0;
     IS31FL3265B_Init();
     Init_1ms();
     Timer1_Start();
