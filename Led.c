@@ -81,14 +81,18 @@ void Led_RT_AllClose(void)
 void Led_Tail_AllOpen(void)
 {
 	uchar i;
-	for(i=OUT1;i<=OUT18;i++)
+	for(i=OUT1;i<=OUT14;i++)
 	{
 		SPI_Write_2Byte(U1,i,0xFF);
+	}
+	for(i=OUT15;i<=OUT18;i++)
+	{
+		SPI_Write_2Byte(U1,i,0x57);//34%
 	}
 	SPI_Write_2Byte(U1,0x37,0x00);//update
 	for(i=OUT1;i<=OUT16;i++)
 	{
-		SPI_Write_2Byte(U4,i,0xFF);
+		SPI_Write_2Byte(U4,i,0x57);
 	}
 	SPI_Write_2Byte(U4,0x37,0x00);//update
 
