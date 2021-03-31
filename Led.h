@@ -8,6 +8,17 @@
 #ifndef LED_H_
 #define LED_H_
 
+typedef struct synchro{
+	uint8 Data;        //ͬ��������
+	uint8 Data1;        //ͬ��������
+	uint8 frequency;   //ͬ���Ĵ���
+	uint8 Time;   //ͬ���Ĵ���
+	uint8 Flay;   //ͬ���ı�־
+}synchroFlay;
+
+
+
+
 #define LED_Interval	(40)
 #define RT_Interval		(20)
 
@@ -69,5 +80,11 @@ void Tail_LowWater_Blinky(void);
 void Tail1_2_Stop_BackWater_Close(void);
 void Tail1_2_Stop_FullWater_Close(void);
 void Logo_Breath_Open(void);
+
+
+void Tail_Single_Low_water(void);
+void Tail_whole_Low_water_reverse(void);
+void Tail_Single_Out_water_reverse(void);
+void Random_flash(void);
 
 #endif /* LED_H_ */

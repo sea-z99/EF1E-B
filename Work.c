@@ -22,7 +22,7 @@ int RT_ActMode=0;
 
 volatile unsigned char LED_Stop_PWM_Flag,PWM_Timer_Flag =0;
 volatile unsigned int Stop_High_Addr,Stop_Low_Addr=0;
-volatile unsigned char Tail_Status,Stop_Status,RT_Status,Fail_Status,PZ_Status,RT_EN_Status=0;
+volatile unsigned char Tail_Status,Stop_Status,LOGO_Status,RT_Status,Fail_Status,PZ_Status,RT_EN_Status=0;
 volatile unsigned int PWM_Timer_Counter =0;
 extern unsigned int Stop_PWM_H1,Stop_PWM_L1,Stop_PWM_H2,Stop_PWM_L2=0;
 
@@ -42,9 +42,13 @@ void Init_1ms(void)
 	T1H=0;
 	T1L=0;
 	PWMMODE = 1;	//使能重载
-	PP2=0x03;		//1000
+	PP2=0x23;		//1000
 	PP1=0xE8;
 	T1CS =0;
+	Stop_PWM_H1 = 0;
+	Stop_PWM_L1 = 0xFA;
+	Stop_PWM_H2 = 0x12;
+	Stop_PWM_L2 = 0x8E;
 	//timer_init(&pwm, Timer_PWM_Callback, 1, 1); //50s loop
 //	timer_init(&pwm, pwm_loop, 1, 1); //50s loop
 	//timer_start(&pwm);
@@ -121,6 +125,7 @@ void Tail_Stop_Check_Input(void)
 {
 	Tail_Status = TAIL;
 	Stop_Status = STOP;
+	LOGO_Status = LOGO_EN;
 
 	if(Tail_Status==0&&Stop_Status==0)//位置低，制动低
 	{
@@ -134,7 +139,7 @@ void Tail_Stop_Check_Input(void)
 			ActMode=NowMode;
 		}
 	}
-	if(Tail_Status==1&&Stop_Status==0)//位置高，制动低
+	if(Tail_Status==1&&Stop_Status==0&&LOGO_Status==0)//位置高，制动低,LOGO亮
 	{
 		PastMode = NowMode;NowMode = Mode2_Status;
 		if(NowMode==PastMode)
@@ -146,7 +151,7 @@ void Tail_Stop_Check_Input(void)
 			ActMode=NowMode;
 		}
 	}
-	if(Tail_Status==0&&Stop_Status==1)//位置低，制动高
+	if(Tail_Status==1&&Stop_Status==0&&LOGO_Status==1)//位置高，制动低,LOGO不亮
 	{
 		PastMode = NowMode;NowMode = Mode3_Status;
 		if(NowMode==PastMode)
@@ -158,9 +163,33 @@ void Tail_Stop_Check_Input(void)
 			ActMode=NowMode;
 		}
 	}
-	if(Tail_Status==1&&Stop_Status==1)//位置高，制动高
+	if(Tail_Status==0&&Stop_Status==1)//位置低，制动高
 	{
 		PastMode = NowMode;NowMode = Mode4_Status;
+		if(NowMode==PastMode)
+		{
+			ActMode=0;
+		}
+		else
+		{
+			ActMode=NowMode;
+		}
+	}
+	if(Tail_Status==1&&Stop_Status==1&&LOGO_EN==0)//位置高，制动高,LOGO亮
+	{
+		PastMode = NowMode;NowMode = Mode5_Status;
+		if(NowMode==PastMode)
+		{
+			ActMode=0;
+		}
+		else
+		{
+			ActMode=NowMode;
+		}
+	}
+	if(Tail_Status==1&&Stop_Status==1&&LOGO_EN==1)//位置高，制动高,LOGO不亮
+	{
+		PastMode = NowMode;NowMode = Mode6_Status;
 		if(NowMode==PastMode)
 		{
 			ActMode=0;
@@ -179,18 +208,32 @@ void Mode_Act(void)
 	case Mode1_Status:
 		Led_Tail_AllClose();	//位置灯全关闭
 		LED_Stop_AllClose();	//制动灯全关闭
+		LOGO_OUT=0;
 		break;
 	case Mode2_Status:
 		Led_Tail_AllOpen();		//位置灯全开启
 		LED_Stop_PWMOpen();		//制动灯5%PWM开启
+		LOGO_OUT=1;
 		break;
 	case Mode3_Status:
-		Led_Tail_AllClose();	//位置灯全关闭
-		LED_Stop_AllOpen();		//制动灯全开启
+		Led_Tail_AllOpen();		//位置灯全开启
+		LED_Stop_PWMOpen();		//制动灯5%PWM开启
+		LOGO_OUT=0;
 		break;
 	case Mode4_Status:
+		Led_Tail_AllClose();		//位置灯关闭
+		LED_Stop_AllOpen();		//制动灯全开启
+		LOGO_OUT=0;
+		break;
+	case Mode5_Status:
 		Led_Tail_AllOpen();		//位置灯全开启
 		LED_Stop_AllOpen();		//制动灯全开启
+		LOGO_OUT=1;
+		break;
+	case Mode6_Status:
+		Led_Tail_AllOpen();		//位置灯全开启
+		LED_Stop_AllOpen();		//制动灯全开启
+		LOGO_OUT=0;
 		break;
 	default:break;
 	}
@@ -200,8 +243,6 @@ void Timer_PWM_Callback(void)
 	if(PWM_Timer_Flag)
 	{
 		PWM_Timer_Flag =0;
-		PP2=Stop_PWM_H1;		//250
-		PP1=Stop_PWM_L1;
 		if(Stop_High_Addr & ADDR1)
 			STOP_1=1;
 		if(Stop_High_Addr & ADDR2)
@@ -226,12 +267,12 @@ void Timer_PWM_Callback(void)
 			STOP_11=1;
 		if(Stop_High_Addr & ADDR12)
 			STOP_12=1;
+		PP2=Stop_PWM_H1;		//250
+		PP1=Stop_PWM_L1;
 	}
 	else
 	{
 		PWM_Timer_Flag =1;
-		PP2=Stop_PWM_H2;		//4750
-		PP1=Stop_PWM_L2;
 		if(Stop_Low_Addr & ADDR1)
 			STOP_1=0;
 		if(Stop_Low_Addr & ADDR2)
@@ -256,11 +297,17 @@ void Timer_PWM_Callback(void)
 			STOP_11=0;
 		if(Stop_Low_Addr & ADDR12)
 			STOP_12=0;
+		PP2=Stop_PWM_H2;		//4750
+		PP1=Stop_PWM_L2;
 	}
 }
 void Led_Hello(void)
 {
 	PZ_OUT = 1;
+	Stop_PWM_H1 = 0;
+	Stop_PWM_L1 = 0xFA;
+	Stop_PWM_H2 = 0x12;
+	Stop_PWM_L2 = 0x8E;
 	Led_RT_WaterOpen();//280ms
 	delay_ms(200);
 	Led_RT_AllClose();
@@ -285,6 +332,10 @@ void Led_Hello(void)
 }
 void Led_Bye(void)
 {
+	Stop_PWM_H1 = 0;
+	Stop_PWM_L1 = 0xFA;
+	Stop_PWM_H2 = 0x12;
+	Stop_PWM_L2 = 0x8E;
 	Led_Tail_AllOpen();
 	LED_Stop_AllOpen();
 	delay_ms(1000);
@@ -292,13 +343,19 @@ void Led_Bye(void)
 	delay_ms(200);
 	Led_RT_AllClose();
 	delay_ms(200);
-	Tail_LowWater_Blinky();
-	delay_ms(1700);
-	Tail1_2_Stop_BackWater_Close();
-	delay_ms(1160);
-	Tail1_2_Stop_FullWater_Close();
-	delay_ms(1000);
-	Tail12_Breath_Close();
+	//Timer1_Start();
+//	Tail_LowWater_Blinky();
+//	delay_ms(1700);
+//	Tail1_2_Stop_BackWater_Close();
+//	delay_ms(1160);
+//	Tail1_2_Stop_FullWater_Close();
+//	delay_ms(1000);
+//	Tail12_Breath_Close();
+	Tail_Single_Low_water();
+	Tail_whole_Low_water_reverse();
+	Tail_Single_Out_water_reverse();
+	Random_flash();
+
 	for(;;);
 }
 void Led_Hello_Check(void)

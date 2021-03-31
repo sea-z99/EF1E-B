@@ -24,7 +24,7 @@
 #define PZ 			P15
 #define WB_EN 		P11
 #define RT_EN 		P12
-#define LOGO_EN 	P45
+#define LOGO_EN 	P07
 
 #define PZ_OUT 		P1LR0
 #define LOGO_OUT 	P2LR3

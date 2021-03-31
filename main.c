@@ -30,25 +30,29 @@ void main()
 //中断函数0:0X04入口地址
 void int_fun0() __interrupt (0)
 {
-	if(T0IF & T0IE)		//500us定时
-	{
-		T0IF= 0;
-	}
+//	if(T0IF & T0IE)		//500us定时
+//	{
+//		T0IF= 0;
+//	}
 	if(T1IF & T1IE)
 	{
 		T1IF =0;
 		Timer_PWM_Callback();
 	}
-	if(T2IF & T2IE)
-	{
-		T2IF =0;
-
-	}
+//	if(T2IF & T2IE)
+//	{
+//		T2IF =0;
+//
+//	}
 }
 
 //中断函数1:0x14入口地址
 void int_fun1() __interrupt (1)
 {
-
+	//	if(T1IF & T1IE)
+	//	{
+	//		T1IF =0;
+	//		Timer_PWM_Callback();
+	//	}
 }
 

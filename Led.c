@@ -25,8 +25,7 @@ void LED_Stop_AllOpen(void)
 	Stop_PWM_L2 = 0xE8;
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
-	T1IF = 0;
-	T1IE = 1;	//使能T1定时器的中断功能
+	Timer1_Start();
 }
 void LED_Stop_PWMOpen(void)
 {
@@ -38,8 +37,7 @@ void LED_Stop_PWMOpen(void)
 	Stop_PWM_L2 = 0x8E;
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
-	T1IF = 0;
-	T1IE = 1;	//使能T1定时器的中断功能
+	Timer1_Start();
 }
 void LED_Stop_AllClose(void)
 {
@@ -63,15 +61,15 @@ void Led_RT_AllOpen(void)
 void Led_RT_WaterOpen(void)
 {
 	uchar i;
-	for(i=OUT1;i<=OUT15;i+=3)
+	for(i=OUT2;i<=OUT14;i+=3)
 	{
+		SPI_Write_2Byte(U7,i-1,0xFF);
 		SPI_Write_2Byte(U7,i,0xFF);
 		SPI_Write_2Byte(U7,i+1,0xFF);
-		SPI_Write_2Byte(U7,i+2,0xFF);
 		SPI_Write_2Byte(U7,0x37,0x00);//update
 		delay_ms(RT_Interval);
 	}
-	for(i=OUT1;i<=OUT18;i+=3)
+	for(i=OUT1;i<=OUT16;i+=3)
 	{
 		SPI_Write_2Byte(U8,i,0xFF);
 		SPI_Write_2Byte(U8,i+1,0xFF);
@@ -112,8 +110,10 @@ void Led_Tail_AllOpen(void)
 		SPI_Write_2Byte(U4,i,0x57);
 	}
 	SPI_Write_2Byte(U4,0x37,0x00);//update
-
-	LOGO_OUT = 1;
+//	if(LOGO_EN==0)
+//	{
+//		LOGO_OUT = 1;
+//	}
 }
 void Led_Tail_AllClose(void)
 {
@@ -129,7 +129,7 @@ void Led_Tail_AllClose(void)
 	}
 	SPI_Write_2Byte(U4,0x37,0x00);//update
 
-	LOGO_OUT = 0;
+	//LOGO_OUT = 0;
 }
 void Tail12_Breath_Open(void)
 {
@@ -711,3 +711,280 @@ void Tail1_2_Stop_FullWater_Close(void)
 	}
 
 }
+
+
+
+
+
+
+//位置单颗低亮流水
+void Tail_Single_Low_water(void){
+	uint8 i;
+
+	synchroFlay syn = {0,0,0,0,0};
+	SPI_Write_2Byte(1,0x1F,0x10);//update
+	SPI_Write_2Byte(1,0x37,0x00);//update
+	delay_ms(40);
+	for(i=0x20;i<=0x2D;i++)
+	{
+		SPI_Write_2Byte(1,i-1,0xFF);//update
+		SPI_Write_2Byte(1,i,0x10);//update
+		syn.frequency++;
+		if(syn.frequency >= 3){  //3个位置灯
+			SPI_Write_2Byte(1,OUT15,0x10);//update
+			SPI_Write_2Byte(1,OUT16,0x10);//update
+			SPI_Write_2Byte(1,OUT17,0x10);//update
+			SPI_Write_2Byte(1,OUT18,0x10);//update
+		}
+		if((syn.frequency >= 4)&&(syn.Flay == 0)){
+			syn.Data1 = i-4;
+			SPI_Write_2Byte(U4,syn.Data1,0x10);//update
+			SPI_Write_2Byte(U4,syn.Data1+1,0x10);//update
+			SPI_Write_2Byte(U4,syn.Data1+2,0x10);//update
+			if(syn.frequency >= 10){
+				syn.Flay = 1;
+			}
+		}
+		if(syn.frequency >= 12){
+			SPI_Write_2Byte(U4,OUT12,0x10);//update
+			SPI_Write_2Byte(U4,OUT11,0x10);//update
+			SPI_Write_2Byte(U4,OUT10,0x10);//update
+		}
+		if(syn.frequency >= 13){
+			SPI_Write_2Byte(U4,OUT13,0x10);//update
+			SPI_Write_2Byte(U4,OUT14,0x10);//update
+			SPI_Write_2Byte(U4,OUT15,0x10);//update
+		}
+		if(syn.frequency >= 14){
+			SPI_Write_2Byte(U4,OUT16,0x10);//update
+		}
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		SPI_Write_2Byte(U4,0x37,0x00);//update
+		delay_ms(40);
+	}
+
+}
+
+
+//位置整体低亮反流水
+void Tail_whole_Low_water_reverse(void){
+	uint8 i;
+	uint32 d =1;
+	synchroFlay syn = {0,0,0,0};
+	delay_ms(960);
+	for(i=0;i<=12;i++){
+		Stop_Low_Addr = d;
+		d = ( d << 1 ) + 1;
+		delay_ms(40);
+	}
+	delay_ms(280);
+	for(i=0x2C;i>=0x1F;i--){
+		SPI_Write_2Byte(1,i,0x10);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		delay_ms(40);
+	}
+}
+
+//位置单颗不亮反流水
+void Tail_Single_Out_water_reverse(void){
+	uint8 i;
+	synchroFlay syn = {0,0,0,0};
+	for(i=0x2D;i<=72;i++){
+		syn.frequency++;
+		if(syn.frequency<=4){
+		SPI_Write_2Byte(1,i,0x00);//update
+		}
+		if(syn.frequency>=5){
+			SPI_Write_2Byte(U4,i-0x12,0x00);//update
+			if(syn.frequency == 14){
+				Stop_High_Addr = 0xFFFC;
+				i -=1;
+			}
+			if(syn.frequency == 15){
+				Stop_High_Addr = 0xFFF0;
+				i -=1;
+			}
+			if(syn.frequency == 19){
+				Stop_High_Addr = 0xFFC0;
+				i -=1;
+			}
+			if(syn.frequency == 20){
+				Stop_High_Addr = 0xFF00;
+				i -=1;
+			}
+			if(syn.frequency == 24){
+				Stop_High_Addr = 0xFC00;
+				i -=1;
+			}
+			if(syn.frequency == 25){
+				Stop_High_Addr = 0xF000;
+				i -=1;
+			}
+		}
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		SPI_Write_2Byte(U4,0x37,0x00);//update
+		delay_ms(20);
+	}
+	delay_ms(320);
+	SPI_Write_2Byte(1,OUT14,0xFF);//update
+	SPI_Write_2Byte(1,0x37,0x00);//update
+	SPI_Write_2Byte(U4,OUT16,0x10);//update
+	SPI_Write_2Byte(U4,0x37,0x00);//update
+	Stop_High_Addr = 0xFC00;
+	delay_ms(40);
+	syn.frequency = 0;
+	for(i=OUT13;i>=OUT4;i--)
+	{
+		syn.frequency ++;
+		SPI_Write_2Byte(1,i+1,0x10);//update
+		SPI_Write_2Byte(1,i,0xFF);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		if(syn.frequency == 1){
+			Stop_High_Addr = 0xF300;
+			SPI_Write_2Byte(U4,OUT15,0x10);//update
+			SPI_Write_2Byte(U4,OUT16,0x00);//update
+		}
+		if(syn.frequency == 2){
+			Stop_High_Addr = 0xF080;
+			SPI_Write_2Byte(U4,OUT15,0x00);//update
+			SPI_Write_2Byte(U4,OUT14,0x10);//update
+			SPI_Write_2Byte(U4,OUT13,0x10);//update
+		}
+		if(syn.frequency == 3){
+			SPI_Write_2Byte(U4,OUT14,0x00);//update
+			SPI_Write_2Byte(U4,OUT13,0x00);//update
+			Stop_High_Addr = 0xF070;
+		}
+		if(syn.frequency == 4){
+			Stop_High_Addr = 0xF000;
+			SPI_Write_2Byte(U4,OUT12,0x10);//update
+			SPI_Write_2Byte(U4,OUT10,0x10);//update
+			SPI_Write_2Byte(U4,OUT11,0x10);//update
+
+		}
+		if(syn.frequency == 5){
+			Stop_High_Addr = 0xF00E;
+			SPI_Write_2Byte(U4,OUT11,0x00);//update
+			SPI_Write_2Byte(U4,OUT10,0x00);//update
+			SPI_Write_2Byte(U4,OUT12,0x00);//update
+		}
+		if(syn.frequency == 6){
+			SPI_Write_2Byte(U4,OUT9,0x10);//update
+			SPI_Write_2Byte(U4,OUT8,0x10);//update
+			Stop_High_Addr = 0xF001;
+		}
+		if(syn.frequency == 7){
+			Stop_High_Addr = 0xF000;
+			SPI_Write_2Byte(U4,OUT9,0x00);//update
+			SPI_Write_2Byte(U4,OUT8,0x00);//update
+			SPI_Write_2Byte(U4,OUT7,0x10);//update
+			SPI_Write_2Byte(U4,OUT6,0x10);//update
+			SPI_Write_2Byte(U4,OUT5,0x10);//update
+		}
+		if(syn.frequency == 8){
+			SPI_Write_2Byte(U4,OUT5,0x00);//update
+			SPI_Write_2Byte(U4,OUT6,0x00);//update
+			SPI_Write_2Byte(U4,OUT7,0x00);//update
+			SPI_Write_2Byte(U4,OUT4,0x10);//update
+			SPI_Write_2Byte(U4,OUT3,0x10);//update
+			SPI_Write_2Byte(U4,0x32,0x10);//update
+		}
+		if(syn.frequency == 9){
+
+			SPI_Write_2Byte(U4,OUT4,0x00);//update
+			SPI_Write_2Byte(U4,OUT3,0x00);//update
+			SPI_Write_2Byte(U4,OUT2,0x00);//update
+			SPI_Write_2Byte(U4,OUT1,0x10);//update
+			SPI_Write_2Byte(1,OUT18,0x10);//update
+			SPI_Write_2Byte(1,OUT17,0x10);//update
+
+		}
+		if(syn.frequency == 10){
+			SPI_Write_2Byte(1,OUT16,0x10);//update
+			SPI_Write_2Byte(1,OUT15,0x10);//update
+			SPI_Write_2Byte(U4,OUT1,0x00);//update
+			SPI_Write_2Byte(1,OUT18,0x00);//update
+			SPI_Write_2Byte(1,OUT17,0x00);//update
+		}
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		SPI_Write_2Byte(U4,0x37,0x00);//update
+		delay_ms(40);
+		SPI_Write_2Byte(1,OUT15,0x00);//update
+		SPI_Write_2Byte(1,OUT17,0x00);//update
+		SPI_Write_2Byte(1,OUT16,0x00);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+	}
+
+}
+
+//乱闪
+void Random_flash(void){
+	uint8 i;
+	synchroFlay syn = {0,0,0,0};
+	SPI_Write_2Byte(1,OUT4,0x10);//update
+	SPI_Write_2Byte(1,OUT3,0xFF);//update
+	SPI_Write_2Byte(1,OUT1,0xFF);//update
+	SPI_Write_2Byte(1,0x37,0x00);//update
+	delay_ms(40);
+	SPI_Write_2Byte(1,OUT2,0xFF);//update
+	SPI_Write_2Byte(1,OUT1,0x00);//update
+	SPI_Write_2Byte(1,0x37,0x00);//update
+	delay_ms(20);
+	for(i=OUT2;i<=OUT14;i++){
+		SPI_Write_2Byte(1,i,0xFF);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		delay_ms(20);
+	}
+	for(i=OUT2;i<=OUT11;i++){
+		SPI_Write_2Byte(1,i,0x10);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		delay_ms(20);
+	}
+//	for(i=OUT3;i<=OUT11;i++){
+//		SPI_Write_2Byte(1,i,0x10);//update
+//		SPI_Write_2Byte(1,0x37,0x00);//update
+//		delay_ms(40);
+//	}
+	SPI_Write_2Byte(1,OUT1,0xFF);//update
+	SPI_Write_2Byte(1,OUT2,0x00);//update
+	for(i=OUT11;i>=OUT2;i--){
+		syn.frequency++;
+		SPI_Write_2Byte(1,i+1,0x00);//update
+		SPI_Write_2Byte(1,i,0x10);//update
+		if(syn.frequency== 1){
+			SPI_Write_2Byte(1,OUT12,0x00);//update
+		}
+		if(syn.frequency== 2){
+			SPI_Write_2Byte(1,OUT13,0x00);//update
+		}
+		if(syn.frequency== 3){
+			SPI_Write_2Byte(1,OUT14,0x00);//update
+		}
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		delay_ms(40);
+	}
+	for(i=OUT14;i>=OUT2;i--){
+		SPI_Write_2Byte(1,i+1,0x00);//update
+		SPI_Write_2Byte(1,i,0xFF);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		delay_ms(40);
+	}
+	SPI_Write_2Byte(1,OUT2,0x00);//update
+	SPI_Write_2Byte(1,0x37,0x00);//update
+	delay_ms(40);
+	for(i=0;i<52;i++)
+	{
+		SPI_Write_2Byte(1,OUT1,0xFF-i*5);//update
+		SPI_Write_2Byte(1,0x37,0x00);//update
+		delay_ms(20);
+	}
+	delay_ms(1500);
+	PZ_OUT = 0;
+}
+
+
+
+
+
+
+
