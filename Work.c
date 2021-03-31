@@ -24,6 +24,7 @@ volatile unsigned char LED_Stop_PWM_Flag,PWM_Timer_Flag =0;
 volatile unsigned int Stop_High_Addr,Stop_Low_Addr=0;
 volatile unsigned char Tail_Status,Stop_Status,RT_Status,Fail_Status,PZ_Status,RT_EN_Status=0;
 volatile unsigned int PWM_Timer_Counter =0;
+extern unsigned int Stop_PWM_H1,Stop_PWM_L1,Stop_PWM_H2,Stop_PWM_L2=0;
 
 struct Timer pwm;
 uint64_t Time_Counter = 0;
@@ -199,8 +200,8 @@ void Timer_PWM_Callback(void)
 	if(PWM_Timer_Flag)
 	{
 		PWM_Timer_Flag =0;
-		PP2=0x00;		//250
-		PP1=0xFA;
+		PP2=Stop_PWM_H1;		//250
+		PP1=Stop_PWM_L1;
 		if(Stop_High_Addr & ADDR1)
 			STOP_1=1;
 		if(Stop_High_Addr & ADDR2)
@@ -229,8 +230,8 @@ void Timer_PWM_Callback(void)
 	else
 	{
 		PWM_Timer_Flag =1;
-		PP2=0x12;		//4750
-		PP1=0x8E;
+		PP2=Stop_PWM_H2;		//4750
+		PP1=Stop_PWM_L2;
 		if(Stop_Low_Addr & ADDR1)
 			STOP_1=0;
 		if(Stop_Low_Addr & ADDR2)

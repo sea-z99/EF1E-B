@@ -13,16 +13,33 @@
 
 extern unsigned char LED_Stop_PWM_Flag;
 extern unsigned int Stop_High_Addr,Stop_Low_Addr=0;
+unsigned int Stop_PWM_H1,Stop_PWM_L1,Stop_PWM_H2,Stop_PWM_L2=0;
 
 void LED_Stop_AllOpen(void)
 {
+	T1IF = 0;
+	T1IE = 0;	//使能T1定时器的中断功能
+	Stop_PWM_H1 = 0x0F;
+	Stop_PWM_L1 = 0xA0;
+	Stop_PWM_H2 = 0x03;
+	Stop_PWM_L2 = 0xE8;
 	Stop_High_Addr=0xFFFF;
-	Stop_Low_Addr=0;
+	Stop_Low_Addr=0xFFFF;
+	T1IF = 0;
+	T1IE = 1;	//使能T1定时器的中断功能
 }
 void LED_Stop_PWMOpen(void)
 {
+	T1IF = 0;
+	T1IE = 0;	//使能T1定时器的中断功能
+	Stop_PWM_H1 = 0;
+	Stop_PWM_L1 = 0xFA;
+	Stop_PWM_H2 = 0x12;
+	Stop_PWM_L2 = 0x8E;
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
+	T1IF = 0;
+	T1IE = 1;	//使能T1定时器的中断功能
 }
 void LED_Stop_AllClose(void)
 {
