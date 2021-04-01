@@ -45,13 +45,7 @@ void Init_1ms(void)
 	PP2=0x23;		//1000
 	PP1=0xE8;
 	T1CS =0;
-	Stop_PWM_H1 = 0;
-	Stop_PWM_L1 = 0xFA;
-	Stop_PWM_H2 = 0x12;
-	Stop_PWM_L2 = 0x8E;
-	//timer_init(&pwm, Timer_PWM_Callback, 1, 1); //50s loop
-//	timer_init(&pwm, pwm_loop, 1, 1); //50s loop
-	//timer_start(&pwm);
+	Change_PWM_5();
 }
 void Timer1_Start(void)
 {
@@ -327,7 +321,6 @@ void Led_Hello(void)
 	Tail1_FullWater_Open();//700
 	delay_ms(1500);
 	Tail1_NoStop_WaterClose();//2000
-//	Tail2_Stop_FullWater_Open();
 	for(;;);
 }
 void Led_Bye(void)

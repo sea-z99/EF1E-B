@@ -18,19 +18,19 @@ RM := rm -rf
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # 所有目标
-all: EFIE-B.hex
+all: EF1E-B.hex
 
 # 工具调用
-EFIE-B.hex: $(OBJS) $(USER_RELS)
+EF1E-B.hex: $(OBJS) $(USER_RELS)
 	@echo '正在构建目标： $@'
 	@echo '正在调用： C Project Linker Release'
-	kf8link -O3 -c -m libkf8v4.lib KF8A200GQS.lib KF8_Touch_Fun.lib -s"C:/ChipONCC/kfl/KF8A200GQS.kfl" -o "EFIE-B.hex" $(OBJS) $(USER_RELS) $(LIBS)
+	kf8link -O3 -c -m libkf8v4.lib KF8A200GQS.lib KF8_Touch_Fun.lib -s"E:/KungFuIDE/kfl/KF8A200GQS.kfl" -o "EF1E-B.hex" $(OBJS) $(USER_RELS) $(LIBS)
 	@echo '已结束构建目标： $@'
 	@echo ' '
 
 # 其他目标
 clean:
-	-$(RM) $(OBJS)$(EXECUTABLES)$(C_DEPS) EFIE-B.hex
+	-$(RM) $(OBJS)$(EXECUTABLES)$(C_DEPS) EF1E-B.hex
 	-@echo ' '
 
 .PHONY: all clean dependents

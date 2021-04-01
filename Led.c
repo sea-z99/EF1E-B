@@ -15,14 +15,25 @@ extern unsigned char LED_Stop_PWM_Flag;
 extern unsigned int Stop_High_Addr,Stop_Low_Addr=0;
 unsigned int Stop_PWM_H1,Stop_PWM_L1,Stop_PWM_H2,Stop_PWM_L2=0;
 
-void LED_Stop_AllOpen(void)
+void Change_PWM_5(void)
 {
-	T1IF = 0;
-	T1IE = 0;	//使能T1定时器的中断功能
+	Stop_PWM_H1 = 0;
+	Stop_PWM_L1 = 0xFA;
+	Stop_PWM_H2 = 0x12;
+	Stop_PWM_L2 = 0x8E;
+}
+void Change_PWM_80(void)
+{
 	Stop_PWM_H1 = 0x0F;
 	Stop_PWM_L1 = 0xA0;
 	Stop_PWM_H2 = 0x03;
 	Stop_PWM_L2 = 0xE8;
+}
+void LED_Stop_AllOpen(void)
+{
+	T1IF = 0;
+	T1IE = 0;	//使能T1定时器的中断功能
+	Change_PWM_80();
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
 	Timer1_Start();
@@ -31,10 +42,7 @@ void LED_Stop_PWMOpen(void)
 {
 	T1IF = 0;
 	T1IE = 0;	//使能T1定时器的中断功能
-	Stop_PWM_H1 = 0;
-	Stop_PWM_L1 = 0xFA;
-	Stop_PWM_H2 = 0x12;
-	Stop_PWM_L2 = 0x8E;
+	Change_PWM_5();
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
 	Timer1_Start();
@@ -110,10 +118,6 @@ void Led_Tail_AllOpen(void)
 		SPI_Write_2Byte(U4,i,0x57);
 	}
 	SPI_Write_2Byte(U4,0x37,0x00);//update
-//	if(LOGO_EN==0)
-//	{
-//		LOGO_OUT = 1;
-//	}
 }
 void Led_Tail_AllClose(void)
 {
@@ -128,8 +132,6 @@ void Led_Tail_AllClose(void)
 		SPI_Write_2Byte(U4,i,0);
 	}
 	SPI_Write_2Byte(U4,0x37,0x00);//update
-
-	//LOGO_OUT = 0;
 }
 void Tail12_Breath_Open(void)
 {

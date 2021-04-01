@@ -80,6 +80,8 @@ void Tail_LowWater_Blinky(void);
 void Tail1_2_Stop_BackWater_Close(void);
 void Tail1_2_Stop_FullWater_Close(void);
 void Logo_Breath_Open(void);
+void Change_PWM_5(void);
+void Change_PWM_80(void);
 
 
 void Tail_Single_Low_water(void);
