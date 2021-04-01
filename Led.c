@@ -69,11 +69,11 @@ void Led_RT_WaterOpen(void)
 		SPI_Write_2Byte(U7,0x37,0x00);//update
 		delay_ms(RT_Interval);
 	}
-	for(i=OUT1;i<=OUT16;i+=3)
+	for(i=OUT2;i<=OUT17;i+=3)
 	{
+		SPI_Write_2Byte(U8,i-1,0xFF);
 		SPI_Write_2Byte(U8,i,0xFF);
 		SPI_Write_2Byte(U8,i+1,0xFF);
-		SPI_Write_2Byte(U8,i+2,0xFF);
 		SPI_Write_2Byte(U8,0x37,0x00);//update
 		delay_ms(RT_Interval);
 	}
