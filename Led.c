@@ -36,7 +36,7 @@ void LED_Stop_AllOpen(void)
 	Change_PWM_80();
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
-	Timer1_Start();
+	Stop_Timer_Start();
 }
 void LED_Stop_PWMOpen(void)
 {
@@ -45,7 +45,7 @@ void LED_Stop_PWMOpen(void)
 	Change_PWM_5();
 	Stop_High_Addr=0xFFFF;
 	Stop_Low_Addr=0xFFFF;
-	Timer1_Start();
+	Stop_Timer_Start();
 }
 void LED_Stop_AllClose(void)
 {
@@ -418,10 +418,10 @@ void Logo_Breath_Open(void)
 		SPI_Write_2Byte(1,0x37,0x00);//update
 		delay_ms(LED_Interval);
 	}
-	if(LOGO_EN==0)
-	{
+//	if(LOGO_EN==0)
+//	{
 		LOGO_OUT=1;
-	}
+	//}
 }
 void Tail1_FullWater_Open(void)
 {

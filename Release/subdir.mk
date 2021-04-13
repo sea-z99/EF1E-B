@@ -7,34 +7,28 @@ C_SRCS += \
 ../GPIO.c \
 ../Led.c \
 ../OSC.c \
-../SoftPwm.c \
 ../SoftSpi.c \
 ../Work.c \
 ../config_set.c \
-../main.c \
-../timer.c 
+../main.c 
 
 OBJS += \
 ./GPIO.o \
 ./Led.o \
 ./OSC.o \
-./SoftPwm.o \
 ./SoftSpi.o \
 ./Work.o \
 ./config_set.o \
-./main.o \
-./timer.o 
+./main.o 
 
 C_DEPS += \
 ./GPIO.dep \
 ./Led.dep \
 ./OSC.dep \
-./SoftPwm.dep \
 ./SoftSpi.dep \
 ./Work.dep \
 ./config_set.dep \
-./main.dep \
-./timer.dep 
+./main.dep 
 
 
 # Each subdirectory must supply rules for building sources it contributes
