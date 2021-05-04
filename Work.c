@@ -83,19 +83,19 @@ uint8_t SearchPwmFlag(void)
 }
 void PwmRisingInit(void)
 {
-	INT1IF=0;
-	INT1IE=1;
-	INT1SE=1;		//上升沿
+	INT0IF=0;
+	INT0IE=1;
+	INT0SE=1;		//上升沿
 }
 void PwmFallingInit(void)
 {
-	INT1IF=0;
-	INT1IE=1;
-	INT1SE=0;		//下降沿
+	INT0IF=0;
+	INT0IE=1;
+	INT0SE=0;		//下降沿
 }
 void PwmDeInit(void)
 {
-	INT1IE=0;
+	INT0IE=0;
 }
 void PwmDetect(void)
 {

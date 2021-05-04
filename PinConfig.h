@@ -22,7 +22,7 @@
 #define RT 			PA0
 #define STOP 		P72
 #define PZ 			P15
-#define WB_EN 		P11
+#define WB_EN 		P45
 #define RT_EN 		P12
 #define LOGO_EN 	P07
 
@@ -41,6 +41,6 @@
 #define STOP_9 		P4LR2
 #define STOP_10 	P4LR3
 #define STOP_11 	P4LR4
-#define STOP_12 	P4LR5
+#define STOP_12 	P3LR0
 
 #endif /* PINCONFIG_H_ */

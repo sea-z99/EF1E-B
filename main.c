@@ -36,9 +36,9 @@ void int_fun0() __interrupt (0)
 		T1IF =0;
 		STOP_PWM_Callback();
 	}
-	if(INT1IE && INT1IF) //INT1中断的响应
+	if(INT0IE && INT0IF) //INT1中断的响应
 	{
-		INT1IF=0;
+		INT0IF=0;
 		PwmFromInteruppt();
 	}
 }
